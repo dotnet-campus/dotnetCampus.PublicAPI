@@ -1,4 +1,4 @@
-﻿using System;
+﻿using dotnetCampus.PublicAPI.Tasks;
 
 namespace dotnetCampus.PublicAPI
 {
@@ -6,7 +6,16 @@ namespace dotnetCampus.PublicAPI
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            if (args.Length is 0)
+            {
+                return;
+            }
+
+            if (args[0] is "generate")
+            {
+                // 组织目标项目的文件夹结构。
+                new GenerateTask().Execute(args);
+            }
         }
     }
 }

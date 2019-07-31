@@ -10,7 +10,6 @@
     <Version>0.1.0-alpha</Version>
     <Authors>walterlv</Authors>
     <Company>dotnet-campus</Company>
-    <RootNamespace>dotnetCampus</RootNamespace>
     <Copyright>Copyright © dotnet-campus 2019</Copyright>
   </PropertyGroup>
 

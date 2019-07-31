@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.0;net48</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Directory.Build.props" />
+    <None Remove="Directory.Build.targets" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\dotnetCampus.PublicAPI\dotnetCampus.PublicAPI.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+  
+</Project>
