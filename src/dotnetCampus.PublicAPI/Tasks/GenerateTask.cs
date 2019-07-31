@@ -82,7 +82,7 @@ namespace dotnetCampus.PublicAPI.Tasks
                     builder.Append($"const {typeName}.{field.Name}");
                     if (field.HasConstant)
                     {
-                        builder.Append($" = {FormatValue(field.Constant)}");
+                        builder.Append($" = {FormatValue(field.FieldType, field.Constant)}");
                     }
                 }
                 else
@@ -176,9 +176,23 @@ namespace dotnetCampus.PublicAPI.Tasks
 
             builder.AppendLine(typeName);
 
+            var isFlag = type.CustomAttributes.Any(x => x.AttributeType.FullName is "System.FlagsAttribute");
+            var values = type.Fields.Where(x => x.IsPublic && x.IsStatic).Select(x => (int)x.Constant).ToArray();
             foreach (var field in type.Fields.Where(x => x.IsPublic && x.IsStatic))
             {
-                builder.Append($"{typeName}.{field.Name} = {field.Constant}");
+                if (field.Name is "UpdatedContent")
+                {
+
+                }
+                var flags = GetFlags((int)field.Constant, values).ToList();
+                if (flags.Count == 1 || !isFlag)
+                {
+                    builder.Append($"{typeName}.{field.Name} = {field.Constant}");
+                }
+                else
+                {
+                    builder.Append($"{typeName}.{field.Name} = {string.Join(" | ", flags.Select(x => FormatValue(type, x)))}");
+                }
                 builder.Append($" -> {FormatTypeName(field.FieldType)}");
                 builder.AppendLine();
             }
@@ -243,7 +257,7 @@ namespace dotnetCampus.PublicAPI.Tasks
                 format += $"{FormatTypeName(p.ParameterType)} {p.Name}";
                 if (p.IsOptional)
                 {
-                    format += $" = {FormatValue(p.ParameterType, p.Constant, true)}";
+                    format += $" = {FormatValue(p.ParameterType, p.Constant)}";
                 }
                 return format;
             }
@@ -329,9 +343,9 @@ namespace dotnetCampus.PublicAPI.Tasks
             return name;
         }
 
-        private static string FormatValue(TypeReference type, object value, bool useEnumName = false)
+        private static string FormatValue(TypeReference type, object value)
         {
-            if (useEnumName && type is TypeDefinition t && t.IsEnum)
+            if (type is TypeDefinition t && t.IsEnum)
             {
                 var fieldName = t.Fields.FirstOrDefault(x => x.Constant?.Equals(value) is true)?.Name;
                 if (fieldName != null)
@@ -362,6 +376,55 @@ namespace dotnetCampus.PublicAPI.Tasks
                 return $@"""{s}""";
             }
             return value.ToString();
+        }
+
+        private static IEnumerable<int> GetFlags(int value, int[] values)
+        {
+            ulong multipleBits = Convert.ToUInt64(value);
+            var multipleResults = new List<int>();
+            for (int i = values.Length - 1; i >= 0; i--)
+            {
+                ulong mask = Convert.ToUInt64(values[i]);
+                if (value == values[i])
+                    continue;
+                if (i == 0 && mask == 0L)
+                    break;
+                if ((multipleBits & mask) == mask)
+                {
+                    multipleResults.Add(values[i]);
+                    multipleBits -= mask;
+                }
+            }
+
+            ulong bits = Convert.ToUInt64(value);
+            var results = new List<int>();
+            if (multipleResults.Count <= 1)
+            {
+                for (int i = values.Length - 1; i >= 0; i--)
+                {
+                    ulong mask = Convert.ToUInt64(values[i]);
+                    if (i == 0 && mask == 0L)
+                        break;
+                    if ((bits & mask) == mask)
+                    {
+                        results.Add(values[i]);
+                        bits -= mask;
+                    }
+                }
+            }
+            else
+            {
+                bits = multipleBits;
+                results = multipleResults;
+            }
+
+            if (bits != 0L)
+                return Enumerable.Empty<int>();
+            if (Convert.ToUInt64(value) != 0L)
+                return results.Reverse<int>();
+            if (bits == Convert.ToUInt64(value) && values.Length > 0 && Convert.ToUInt64(values[0]) == 0L)
+                return values.Take(1);
+            return Enumerable.Empty<int>();
         }
 
         private static readonly Dictionary<string, string> KeywordMapping = new Dictionary<string, string>
