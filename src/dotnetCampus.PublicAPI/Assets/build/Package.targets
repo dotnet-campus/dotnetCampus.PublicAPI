@@ -39,13 +39,22 @@
     <Message Text="2. 准备 API 文件" />
   </Target>
   
-  <!-- 组织目标项目文件夹结构。 -->
+  <!-- 生成 API。 -->
   <Target Name="_DcpGenerateApis"
           AfterTargets="AfterBuild"
-          DependsOnTargets="_DcpEvaluateProperties">
+          DependsOnTargets="_DcpMakeProjectFiles">
     <Exec ConsoleToMSBuild="True"
           Command="&quot;$(_DcpToolFile)&quot; generate --assembly-file &quot;$(IntermediateOutputPath)$(TargetFileName)&quot; --api-unshipped-file &quot;@(_DcpUnshippedApiFile)&quot; --api-shipped-file &quot;@(_DcpShippedApiFile)&quot; " />
     <Message Text="3. 生成 API" />
+  </Target>
+
+  <!-- 打包发布 API。（此 API 暂不能用） -->
+  <Target Name="ShipApi"
+          DependsOnTargets="_DcpMakeProjectFiles">
+    <Error Text="将所有 API 打包发布：尚未实现此功能，请手工打包。" />
+    <Exec ConsoleToMSBuild="True"
+          Command="&quot;$(_DcpToolFile)&quot; ship --api-unshipped-file &quot;@(_DcpUnshippedApiFile)&quot; --api-shipped-file &quot;@(_DcpShippedApiFile)&quot; " />
+    <Message Text="将所有 API 打包发布" />
   </Target>
 
 </Project>

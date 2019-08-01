@@ -21,6 +21,11 @@ namespace dotnetCampus.PublicAPI
                 // 组织目标项目的文件夹结构。
                 new GenerateTask().Execute(args);
             }
+            else if (args[0] is "ship")
+            {
+                // 组织目标项目的文件夹结构。
+                new ShipApiTask().Execute(args);
+            }
         }
     }
 }
