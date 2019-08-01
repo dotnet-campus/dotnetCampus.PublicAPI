@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Mono.Cecil;
@@ -12,25 +11,16 @@ namespace dotnetCampus.PublicAPI.Apis
 
         public override IEnumerable<string> ReadCore(TypeDefinition type)
         {
-            string typeName = FormatTypeName(type);
+            string typeName = type.ToFormattedName();
 
             foreach (var method in type.Methods.Where(x => x.IsConstructor
                 && (x.IsPublic || x.Attributes.HasFlag(MethodAttributes.Family) || x.Attributes.HasFlag(MethodAttributes.FamORAssem))))
             {
-                var builder = new StringBuilder();
-
-                if (method.Attributes.HasFlag(MethodAttributes.Static))
-                {
-                    builder.Append($"static ");
-                }
                 var index = type.Name.IndexOf('`');
                 var methodName = index >= 0 ? type.Name.Substring(0, index) : type.Name;
-                builder.Append($"{typeName}.{methodName}");
-                var parameterList = FormatParameterList(method);
-                builder.Append($"({parameterList})");
-                builder.Append($" -> {FormatTypeName(method.ReturnType)}");
-
-                yield return builder.ToString();
+                var (modifiers, _, parameters) = method.ToFormattedParts();
+                var api = $"{modifiers}{typeName}.{methodName}({parameters}) -> {method.ReturnType.ToFormattedName()}";
+                yield return api;
             }
 
             foreach (var field in type.Fields.Where(x =>
@@ -45,7 +35,7 @@ namespace dotnetCampus.PublicAPI.Apis
                     builder.Append($"const {typeName}.{field.Name}");
                     if (field.HasConstant)
                     {
-                        builder.Append($" = {FormatValue(field.FieldType, field.Constant)}");
+                        builder.Append($" = {field.FieldType.FormatValue(field.Constant)}");
                     }
                 }
                 else
@@ -60,7 +50,7 @@ namespace dotnetCampus.PublicAPI.Apis
                     }
                     builder.Append($"{typeName}.{field.Name}");
                 }
-                builder.Append($" -> {FormatTypeName(field.FieldType)}");
+                builder.Append($" -> {field.FieldType.ToFormattedName()}");
 
                 yield return builder.ToString();
             }
@@ -73,7 +63,7 @@ namespace dotnetCampus.PublicAPI.Apis
 
                 builder.Append($"{typeName}.{@event.Name}");
                 builder.Append($" -> ");
-                builder.Append(FormatTypeName(@event.EventType));
+                builder.Append(@event.EventType.ToFormattedName());
 
                 yield return builder.ToString();
             }
@@ -85,24 +75,17 @@ namespace dotnetCampus.PublicAPI.Apis
                     if (property.GetMethod != null
                         && (property.GetMethod.IsPublic || property.GetMethod.Attributes.HasFlag(MethodAttributes.Family) || property.GetMethod.Attributes.HasFlag(MethodAttributes.FamORAssem)))
                     {
-                        var builder = new StringBuilder();
-
-                        builder.Append($"{FormatModifiers(property.GetMethod)}{typeName}.this[{FormatParameterList(property.GetMethod)}]");
-                        builder.Append($".get -> ");
-                        builder.Append(FormatTypeName(property.PropertyType));
-
-                        yield return builder.ToString();
+                        var (modifiers, _, parameters) = property.GetMethod.ToFormattedParts();
+                        var api = $"{modifiers}{typeName}.this[{parameters}].get -> {property.PropertyType.ToFormattedName()}";
+                        yield return api;
                     }
                     if (property.SetMethod != null
                         && (property.SetMethod.IsPublic || property.SetMethod.Attributes.HasFlag(MethodAttributes.Family) || property.SetMethod.Attributes.HasFlag(MethodAttributes.FamORAssem)))
                     {
-                        var builder = new StringBuilder();
-
-                        builder.Append($"{FormatModifiers(property.SetMethod)}{typeName}.this[{FormatParameterList(property.GetMethod)}]");
-                        builder.Append($".set -> void");
-                        builder.AppendLine();
-
-                        yield return builder.ToString();
+                        var (_, _, parameters) = property.GetMethod.ToFormattedParts();
+                        var (modifiers, _, _) = property.SetMethod.ToFormattedParts();
+                        var api = $"{modifiers}{typeName}.this[{parameters}].set -> void";
+                        yield return api;
                     }
                 }
                 else
@@ -110,23 +93,16 @@ namespace dotnetCampus.PublicAPI.Apis
                     if (property.GetMethod != null
                         && (property.GetMethod.IsPublic || property.GetMethod.Attributes.HasFlag(MethodAttributes.Family) || property.GetMethod.Attributes.HasFlag(MethodAttributes.FamORAssem)))
                     {
-                        var builder = new StringBuilder();
-
-                        builder.Append($"{FormatModifiers(property.GetMethod)}{typeName}.{property.Name}");
-                        builder.Append($".get -> ");
-                        builder.Append(FormatTypeName(property.PropertyType));
-
-                        yield return builder.ToString();
+                        var (modifiers, _, parameters) = property.GetMethod.ToFormattedParts();
+                        var api = $"{modifiers}{typeName}.{property.Name}.get -> {property.PropertyType.ToFormattedName()}";
+                        yield return api;
                     }
                     if (property.SetMethod != null
                         && (property.SetMethod.IsPublic || property.SetMethod.Attributes.HasFlag(MethodAttributes.Family) || property.SetMethod.Attributes.HasFlag(MethodAttributes.FamORAssem)))
                     {
-                        var builder = new StringBuilder();
-
-                        builder.Append($"{FormatModifiers(property.SetMethod)}{typeName}.{property.Name}");
-                        builder.Append($".set -> void");
-
-                        yield return builder.ToString();
+                        var (modifiers, _, parameters) = property.SetMethod.ToFormattedParts();
+                        var api = $"{modifiers}{typeName}.{property.Name}.set -> void";
+                        yield return api;
                     }
                 }
             }
@@ -139,113 +115,10 @@ namespace dotnetCampus.PublicAPI.Apis
                 && !x.IsAddOn
                 && !x.IsRemoveOn))
             {
-                var builder = new StringBuilder();
-
-                string methodName = FormatMethodName(method);
-                builder.Append($"{FormatModifiers(method)}{typeName}.{methodName}");
-                var parameterList = FormatParameterList(method);
-                builder.Append($"({parameterList})");
-                builder.Append($" -> {FormatTypeName(method.ReturnType)}");
-
-                yield return builder.ToString();
+                var (modifiers, methodName, parameters) = method.ToFormattedParts();
+                var api = $"{modifiers}{typeName}.{methodName}({parameters}) -> {method.ReturnType.ToFormattedName()}";
+                yield return api;
             }
-        }
-
-        private static string FormatParameterList(MethodDefinition method)
-        {
-            var @this = "";
-            if (method.CustomAttributes.Any(x => x.AttributeType.FullName == "System.Runtime.CompilerServices.ExtensionAttribute"))
-            {
-                @this = "this ";
-            }
-            var parameters = $"{@this}{string.Join(", ", method.Parameters.Select(p => FormatParameter(p)))}";
-            return parameters;
-
-            string FormatParameter(ParameterDefinition p)
-            {
-                var format = "";
-                if (p.CustomAttributes.Any(x => x.AttributeType.FullName == "System.ParamArrayAttribute"))
-                {
-                    format += "params ";
-                }
-                format += $"{FormatTypeName(p.ParameterType)} {p.Name}";
-                if (p.IsOptional)
-                {
-                    format += $" = {FormatValue(p.ParameterType, p.Constant)}";
-                }
-                return format;
-            }
-        }
-
-        private static string FormatModifiers(MethodDefinition method)
-        {
-            if (method.Attributes.HasFlag(MethodAttributes.Static))
-            {
-                return "static ";
-            }
-            else if (method.IsVirtual && method.IsReuseSlot && method.IsHideBySig)
-            {
-                return "override ";
-            }
-            else if (!method.DeclaringType.IsInterface && method.IsAbstract)
-            {
-                return "abstract ";
-            }
-            else if (!method.DeclaringType.IsInterface && !method.IsFinal && method.IsVirtual && method.IsNewSlot)
-            {
-                return "virtual ";
-            }
-            return "";
-        }
-
-        private static string FormatMethodName(MethodDefinition method)
-        {
-            if (method.Name is "op_Implicit")
-            {
-                return $"implicit operator {FormatTypeName(method.ReturnType)}";
-            }
-            else if (method.Name is "op_True")
-            {
-                return $"operator true";
-            }
-            else if (method.Name is "op_False")
-            {
-                return $"operator false";
-            }
-            else if (method.Name is "op_Equality")
-            {
-                return $"operator ==";
-            }
-            else if (method.Name is "op_Inequality")
-            {
-                return $"operator !=";
-            }
-            else
-            {
-                return FormatMemberNameIncludingGenerics(method.Name, method.GenericParameters);
-            }
-        }
-
-        private static string FormatMemberNameIncludingGenerics(string fullName, IList<GenericParameter> generics)
-            => FormatMemberNameIncludingGenerics(fullName, generics.Cast<TypeReference>().ToList());
-
-        private static string FormatMemberNameIncludingGenerics(string fullName, IList<TypeReference> generics)
-        {
-            string name;
-            if (generics.Count > 0)
-            {
-                var index = fullName.IndexOf('`');
-                if (index >= 0)
-                {
-                    fullName = fullName.Substring(0, index);
-                }
-                name = $"{fullName}<{string.Join(", ", generics.Select(x => FormatTypeName(x)))}>";
-            }
-            else
-            {
-                name = fullName;
-            }
-            return name;
         }
     }
 }

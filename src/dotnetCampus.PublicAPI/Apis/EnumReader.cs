@@ -12,7 +12,7 @@ namespace dotnetCampus.PublicAPI.Apis
 
         public override IEnumerable<string> ReadCore(TypeDefinition type)
         {
-            var typeName = FormatTypeName(type);
+            var typeName = type.ToFormattedName();
 
             var isFlag = type.CustomAttributes.Any(x => x.AttributeType.FullName is "System.FlagsAttribute");
             var values = type.Fields.Where(x => x.IsPublic && x.IsStatic).Select(x => (int)x.Constant).ToArray();
@@ -27,9 +27,9 @@ namespace dotnetCampus.PublicAPI.Apis
                 }
                 else
                 {
-                    builder.Append($"{typeName}.{field.Name} = {string.Join(" | ", flags.Select(x => FormatValue(type, x)))}");
+                    builder.Append($"{typeName}.{field.Name} = {string.Join(" | ", flags.Select(x => type.FormatValue(x)))}");
                 }
-                builder.Append($" -> {FormatTypeName(field.FieldType)}");
+                builder.Append($" -> {field.FieldType.ToFormattedName()}");
 
                 yield return builder.ToString();
             }
