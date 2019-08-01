@@ -67,11 +67,6 @@ namespace dotnetCampus.PublicAPI.Tasks
                 builder.AppendLine();
             }
 
-            if (type.FullName.Contains("ContinuousPartOperation"))
-            {
-
-            }
-
             foreach (var field in type.Fields.Where(x =>
                 x.IsPublic
                 || x.Attributes.HasFlag(FieldAttributes.Family)
@@ -156,11 +151,6 @@ namespace dotnetCampus.PublicAPI.Tasks
                 && !x.IsAddOn
                 && !x.IsRemoveOn))
             {
-                if (method.FullName.Contains("FillInto"))
-                {
-
-                }
-
                 string methodName = FormatMethodName(method);
                 builder.Append($"{FormatModifiers(method)}{typeName}.{methodName}");
                 var parameterList = FormatParameterList(method);
@@ -180,10 +170,6 @@ namespace dotnetCampus.PublicAPI.Tasks
             var values = type.Fields.Where(x => x.IsPublic && x.IsStatic).Select(x => (int)x.Constant).ToArray();
             foreach (var field in type.Fields.Where(x => x.IsPublic && x.IsStatic))
             {
-                if (field.Name is "UpdatedContent")
-                {
-
-                }
                 var flags = GetFlags((int)field.Constant, values).ToList();
                 if (flags.Count == 1 || !isFlag)
                 {
@@ -265,11 +251,6 @@ namespace dotnetCampus.PublicAPI.Tasks
 
         private static string FormatModifiers(MethodDefinition method)
         {
-            if (method.FullName.Contains("CopyRight"))
-            {
-
-            }
-
             if (method.Attributes.HasFlag(MethodAttributes.Static))
             {
                 return "static ";
@@ -313,10 +294,6 @@ namespace dotnetCampus.PublicAPI.Tasks
             }
             else
             {
-                if (method.FullName.Contains("op_"))
-                {
-
-                }
                 return FormatMemberNameIncludingGenerics(method.Name, method.GenericParameters);
             }
         }
