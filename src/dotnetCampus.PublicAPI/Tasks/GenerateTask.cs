@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -16,11 +17,13 @@ namespace dotnetCampus.PublicAPI.Tasks
     {
         public void Execute(string[] args)
         {
-            GenerateApisToFiles(args[2], args[4]);
+            GenerateApisToFiles(args[2], args[4], args[6]);
         }
 
-        private void GenerateApisToFiles(string assemblyFile, string apiFile)
+        private void GenerateApisToFiles(string assemblyFile, string apiFile, string shippedApiFile)
         {
+            Debugger.Launch();
+
             var builder = new StringBuilder();
 
             var module = ModuleDefinition.ReadModule(assemblyFile);

@@ -4,4 +4,39 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
 
+  <ItemGroup>
+    <_DcpShippedApiFile Include="Properties\APIs\$(TargetFramework)\PublicAPI.Shipped.txt" />
+    <_DcpUnshippedApiFile Include="Properties\APIs\$(TargetFramework)\PublicAPI.Unshipped.txt" />
+    <AdditionalFiles Include="@(_DcpShippedApiFile)" />
+    <AdditionalFiles Include="@(_DcpUnshippedApiFile)" />
+  </ItemGroup>
+
+  <!-- 计算所有编译目标所需的各种属性和参数。 -->
+  <Target Name="_DcpEvaluateProperties">
+    <PropertyGroup>
+      <_DcpRoot>$(MSBuildThisFileDirectory)..\</_DcpRoot>
+      <_DcpToolFile>$(MSBuildThisFileDirectory)..\tools\dotnetCampus.PublicAPI.exe</_DcpToolFile>
+    </PropertyGroup>
+    <Message Text="1.1 初始化 API 管理" />
+  </Target>
+
+  <!-- 避免依赖传递。 -->
+  <Target Name="_DcpPrivateAssets"
+          BeforeTargets="CollectPackageReferences">
+    <ItemGroup>
+      <PackageReference Update="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />
+      <PackageReference Update="dotnetCampus.PublicAPI" PrivateAssets="all" />
+    </ItemGroup>
+    <Message Text="1. 避免依赖传递" />
+  </Target>
+  
+  <!-- 组织目标项目文件夹结构。 -->
+  <Target Name="_DcpMakeProjectFiles"
+          AfterTargets="AfterBuild"
+          DependsOnTargets="_DcpEvaluateProperties">
+    <Exec ConsoleToMSBuild="True"
+          Command="&quot;$(_DcpToolFile)&quot; generate --assembly-file &quot;$(IntermediateOutputPath)$(TargetFileName)&quot; --api-unshipped-file &quot;@(_DcpUnshippedApiFile)&quot; --api-shipped-file &quot;@(_DcpShippedApiFile)&quot; " />
+    <Message Text="2. 生成 API 文件" />
+  </Target>
+
 </Project>

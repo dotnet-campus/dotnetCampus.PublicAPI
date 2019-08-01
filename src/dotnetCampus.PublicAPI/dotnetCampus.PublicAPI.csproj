@@ -36,7 +36,7 @@
   <!-- 在编译结束后将生成的可执行程序放到 Tools 文件夹中，使得 Assets 文件夹的目录结构与 NuGet 包非常相似，便于 NuGet 包调试。 -->
   <Target Name="_DcpCopyOutputToDebuggableFolder" BeforeTargets="GenerateNuspec">
     <ItemGroup>
-      <_DcpToCopyFiles Include="$(OutputPath)net472\**" />
+      <_DcpToCopyFiles Include="$(OutputPath)**" />
     </ItemGroup>
     <Message Text="@(_DcpToCopyFiles)" />
     <Copy SourceFiles="@(_DcpToCopyFiles)" DestinationFolder="Assets\tools" />
