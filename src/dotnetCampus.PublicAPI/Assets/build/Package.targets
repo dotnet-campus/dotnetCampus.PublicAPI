@@ -27,16 +27,25 @@
       <PackageReference Update="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />
       <PackageReference Update="dotnetCampus.PublicAPI" PrivateAssets="all" />
     </ItemGroup>
-    <Message Text="1. 避免依赖传递" />
+    <Message Text="1.2 避免依赖传递" />
   </Target>
   
   <!-- 组织目标项目文件夹结构。 -->
   <Target Name="_DcpMakeProjectFiles"
+          BeforeTargets="CoreCompile"
+          DependsOnTargets="_DcpEvaluateProperties">
+    <Exec ConsoleToMSBuild="True"
+          Command="&quot;$(_DcpToolFile)&quot; prepare --api-unshipped-file &quot;@(_DcpUnshippedApiFile)&quot; --api-shipped-file &quot;@(_DcpShippedApiFile)&quot; " />
+    <Message Text="2. 准备 API 文件" />
+  </Target>
+  
+  <!-- 组织目标项目文件夹结构。 -->
+  <Target Name="_DcpGenerateApis"
           AfterTargets="AfterBuild"
           DependsOnTargets="_DcpEvaluateProperties">
     <Exec ConsoleToMSBuild="True"
           Command="&quot;$(_DcpToolFile)&quot; generate --assembly-file &quot;$(IntermediateOutputPath)$(TargetFileName)&quot; --api-unshipped-file &quot;@(_DcpUnshippedApiFile)&quot; --api-shipped-file &quot;@(_DcpShippedApiFile)&quot; " />
-    <Message Text="2. 生成 API 文件" />
+    <Message Text="3. 生成 API" />
   </Target>
 
 </Project>
