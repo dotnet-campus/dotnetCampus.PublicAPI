@@ -1,23 +1,25 @@
 ﻿using System.IO;
 using System.Linq;
-using dotnetCampus.PublicAPI.Core;
+using dotnetCampus.Cli;
 
 namespace dotnetCampus.PublicAPI.Tasks
 {
-    internal class ShipApiTask : IPackageTask
+    [Verb("ship")]
+    internal class ShipApiTask
     {
-        public void Execute(string[] args)
-        {
-            GenerateApisToFiles(args[2], args[4]);
-        }
+        [Option("ApiUnshippedFile")]
+        public string ApiUnshippedFile { get; set; }
 
-        private void GenerateApisToFiles(string apiFile, string shippedApiFile)
+        [Option("ApiShippedFile")]
+        public string ApiShippedFile { get; set; }
+
+        public void Run()
         {
-            var lines1 = File.ReadAllLines(apiFile);
-            var lines2 = File.ReadAllLines(shippedApiFile);
+            var lines1 = File.ReadAllLines(ApiUnshippedFile);
+            var lines2 = File.ReadAllLines(ApiShippedFile);
             var lines = lines1.Union(lines2).OrderBy(x => x);
-            File.WriteAllLines(shippedApiFile, lines);
-            File.WriteAllText(apiFile, "");
+            File.WriteAllLines(ApiShippedFile, lines);
+            File.WriteAllText(ApiUnshippedFile, "");
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using dotnetCampus.PublicAPI.Tasks;
+﻿using dotnetCampus.Cli;
+using dotnetCampus.PublicAPI.Tasks;
 
 namespace dotnetCampus.PublicAPI
 {
@@ -6,26 +7,12 @@ namespace dotnetCampus.PublicAPI
     {
         static void Main(string[] args)
         {
-            if (args.Length is 0)
-            {
-                return;
-            }
-
-            if (args[0] is "prepare")
-            {
-                // 确保 API 文件存在。
-                new PrepareApiFileTask().Execute(args);
-            }
-            else if (args[0] is "generate")
-            {
-                // 组织目标项目的文件夹结构。
-                new GenerateTask().Execute(args);
-            }
-            else if (args[0] is "ship")
-            {
-                // 组织目标项目的文件夹结构。
-                new ShipApiTask().Execute(args);
-            }
+            //System.Diagnostics.Debugger.Launch();
+            CommandLine.Parse(args)
+                .AddHandler<GenerateTask>(o => o.Run())
+                .AddHandler<PrepareApiFileTask>(o => o.Run())
+                .AddHandler<ShipApiTask>(o => o.Run())
+                .Run();
         }
     }
 }

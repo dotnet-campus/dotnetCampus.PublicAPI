@@ -1,30 +1,32 @@
 ﻿using System.IO;
-using dotnetCampus.PublicAPI.Core;
+using dotnetCampus.Cli;
 
 namespace dotnetCampus.PublicAPI.Tasks
 {
-    internal class PrepareApiFileTask : IPackageTask
+    [Verb("prepare")]
+    internal class PrepareApiFileTask
     {
-        public void Execute(string[] args)
-        {
-            PrepareApiFiles(args[2], args[4]);
-        }
+        [Option("ApiUnshippedFile")]
+        public string ApiUnshippedFile { get; set; }
 
-        private void PrepareApiFiles(string apiFile, string shippedApiFile)
+        [Option("ApiShippedFile")]
+        public string ApiShippedFile { get; set; }
+
+        public void Run()
         {
-            var directory = Path.GetDirectoryName(apiFile);
+            var directory = Path.GetDirectoryName(ApiUnshippedFile);
             if (!Directory.Exists(directory))
             {
                 Directory.CreateDirectory(directory);
             }
 
-            if (!File.Exists(apiFile))
+            if (!File.Exists(ApiUnshippedFile))
             {
-                File.WriteAllText(apiFile, "");
+                File.WriteAllText(ApiUnshippedFile, "");
             }
-            if (!File.Exists(shippedApiFile))
+            if (!File.Exists(ApiShippedFile))
             {
-                File.WriteAllText(shippedApiFile, "");
+                File.WriteAllText(ApiShippedFile, "");
             }
         }
     }

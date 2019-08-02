@@ -14,12 +14,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="dotnetCampus.CommandLine.Source" Version="1.0.0" PrivateAssets="All" />
     <PackageReference Include="Mono.Cecil" Version="0.10.4" PrivateAssets="All" />
     <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.3" PrivateAssets="All" />
 
     <!-- Microsoft.CodeAnalysis.PublicApiAnalyzers 需要被作为依赖项加入到目标项目中，但是目标项目打包后不能成为依赖项。
          这样，使用此 API 管理包的时候，API 分析器会被加入，但是不会成为目标项目的依赖。 -->
     <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="2.9.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="System.Web" />
   </ItemGroup>
   
   <!-- 在编译结束后将需要的源码拷贝到 NuGet 包中 -->

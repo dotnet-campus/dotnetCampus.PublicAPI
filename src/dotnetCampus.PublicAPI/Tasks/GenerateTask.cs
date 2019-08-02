@@ -1,26 +1,31 @@
 ﻿using System.IO;
 using System.Linq;
 using System.Text;
+using dotnetCampus.Cli;
 using dotnetCampus.PublicAPI.Apis;
-using dotnetCampus.PublicAPI.Core;
 
 namespace dotnetCampus.PublicAPI.Tasks
 {
     /// <summary>
     /// 生成 API 到文件。
     /// </summary>
-    internal class GenerateTask : IPackageTask
+    [Verb("generate")]
+    internal class GenerateTask
     {
-        public void Execute(string[] args)
-        {
-            GenerateApisToFiles(args[2], args[4], args[6]);
-        }
+        [Option("AssemblyFile")]
+        public string AssemblyFile { get; set; }
 
-        private void GenerateApisToFiles(string assemblyFile, string apiFile, string shippedApiFile)
+        [Option("ApiUnshippedFile")]
+        public string ApiUnshippedFile { get; set; }
+
+        [Option("ApiShippedFile")]
+        public string ApiShippedFile { get; set; }
+
+        public void Run()
         {
-            var shippedLines = File.ReadAllLines(shippedApiFile);
+            var shippedLines = File.ReadAllLines(ApiShippedFile);
             var builder = new StringBuilder();
-            var reader = new ApiReader(new FileInfo(assemblyFile));
+            var reader = new ApiReader(new FileInfo(AssemblyFile));
             foreach (var api in reader.Read())
             {
                 if (!shippedLines.Contains(api))
@@ -29,7 +34,7 @@ namespace dotnetCampus.PublicAPI.Tasks
                 }
             }
             var unshippedApis = builder.ToString();
-            File.WriteAllText(apiFile, unshippedApis);
+            File.WriteAllText(ApiShippedFile, unshippedApis);
         }
     }
 }
