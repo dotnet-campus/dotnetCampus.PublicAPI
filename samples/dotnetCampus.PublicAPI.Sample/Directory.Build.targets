@@ -1,6 +1,0 @@
-﻿<Project>
-
-  <Import Condition=" '$(TargetFrameworks)' == '' " Project="..\..\src\dotnetCampus.PublicAPI\Assets\build\Package.targets" />
-  <Import Condition=" '$(TargetFrameworks)' != '' " Project="..\..\src\dotnetCampus.PublicAPI\Assets\buildMultiTargeting\Package.targets" />
-
-</Project>

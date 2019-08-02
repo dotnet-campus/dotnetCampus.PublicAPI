@@ -1,5 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <Import Project="..\..\src\dotnetCampus.PublicAPI\Assets\build\Package.props" />
+  
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFrameworks>netcoreapp3.0;net48</TargetFrameworks>
@@ -13,5 +15,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\dotnetCampus.PublicAPI\dotnetCampus.PublicAPI.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
+  
+  <Import Project="..\..\src\dotnetCampus.PublicAPI\Assets\build\Package.targets" />
   
 </Project>
