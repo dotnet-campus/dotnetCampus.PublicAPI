@@ -21,6 +21,10 @@ namespace dotnetCampus.PublicAPI.Apis
         public ApiReader(FileInfo assemblyFile)
         {
             _assemblyFile = assemblyFile ?? throw new ArgumentNullException(nameof(assemblyFile));
+            if (!File.Exists(assemblyFile.FullName))
+            {
+                throw new FileNotFoundException("无法找到用于 API 分析的程序集。", assemblyFile.FullName);
+            }
         }
 
         public IEnumerable<string> Read()
