@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using Mono.Cecil;
@@ -15,15 +16,16 @@ namespace dotnetCampus.PublicAPI.Apis
             var typeName = type.ToFormattedName();
 
             var isFlag = type.CustomAttributes.Any(x => x.AttributeType.FullName is "System.FlagsAttribute");
-            var values = type.Fields.Where(x => x.IsPublic && x.IsStatic).Select(x => (int)x.Constant).ToArray();
+            var values = type.Fields.Where(x => x.IsPublic && x.IsStatic).Select(x =>
+                Convert.ToInt64(x.Constant, CultureInfo.InvariantCulture)).ToArray();
             foreach (var field in type.Fields.Where(x => x.IsPublic && x.IsStatic))
             {
                 var builder = new StringBuilder();
 
-                var flags = GetFlags((int)field.Constant, values).ToList();
+                var flags = GetFlags(Convert.ToInt64(field.Constant, CultureInfo.InvariantCulture), values).ToList();
                 if (flags.Count == 1 || !isFlag)
                 {
-                    builder.Append($"{typeName}.{field.Name} = {field.Constant}");
+                    builder.Append($"{typeName}.{field.Name} = {Convert.ToInt64(field.Constant, CultureInfo.InvariantCulture)}");
                 }
                 else
                 {
@@ -35,13 +37,13 @@ namespace dotnetCampus.PublicAPI.Apis
             }
         }
 
-        private static IEnumerable<int> GetFlags(int value, int[] values)
+        private static IEnumerable<long> GetFlags(long value, long[] values)
         {
-            ulong multipleBits = Convert.ToUInt64(value);
-            var multipleResults = new List<int>();
+            long multipleBits = Convert.ToInt64(value);
+            var multipleResults = new List<long>();
             for (int i = values.Length - 1; i >= 0; i--)
             {
-                ulong mask = Convert.ToUInt64(values[i]);
+                long mask = Convert.ToInt64(values[i]);
                 if (value == values[i])
                     continue;
                 if (i == 0 && mask == 0L)
@@ -53,13 +55,13 @@ namespace dotnetCampus.PublicAPI.Apis
                 }
             }
 
-            ulong bits = Convert.ToUInt64(value);
-            var results = new List<int>();
+            long bits = Convert.ToInt64(value);
+            var results = new List<long>();
             if (multipleResults.Count <= 1)
             {
                 for (int i = values.Length - 1; i >= 0; i--)
                 {
-                    ulong mask = Convert.ToUInt64(values[i]);
+                    long mask = Convert.ToInt64(values[i]);
                     if (i == 0 && mask == 0L)
                         break;
                     if ((bits & mask) == mask)
@@ -76,12 +78,12 @@ namespace dotnetCampus.PublicAPI.Apis
             }
 
             if (bits != 0L)
-                return Enumerable.Empty<int>();
-            if (Convert.ToUInt64(value) != 0L)
-                return results.Reverse<int>();
-            if (bits == Convert.ToUInt64(value) && values.Length > 0 && Convert.ToUInt64(values[0]) == 0L)
+                return Enumerable.Empty<long>();
+            if (Convert.ToInt64(value) != 0L)
+                return results.Reverse<long>();
+            if (bits == Convert.ToInt64(value) && values.Length > 0 && Convert.ToInt64(values[0]) == 0L)
                 return values.Take(1);
-            return Enumerable.Empty<int>();
+            return Enumerable.Empty<long>();
         }
     }
 }
