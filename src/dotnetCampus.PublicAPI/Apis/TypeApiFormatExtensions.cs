@@ -11,9 +11,16 @@ namespace dotnetCampus.PublicAPI.Apis
         {
             // 对 T? 类型的需要特殊考虑。
             if (type.FullName.StartsWith("System.Nullable`1", StringComparison.InvariantCulture)
-                && type is GenericInstanceType gt)
+                && type is GenericInstanceType ngt)
             {
-                return $"{FormatBuildInTypeName(gt.GenericArguments[0].FullName)}?";
+                return $"{FormatBuildInTypeName(ngt.GenericArguments[0].FullName)}?";
+            }
+
+            // 对 (T, T) 类型的需要特殊考虑。
+            if (type.FullName.StartsWith("System.ValueTuple`", StringComparison.InvariantCulture)
+                && type is GenericInstanceType vgt)
+            {
+                return $"({string.Join(", ", vgt.GenericArguments.Select(x => x.ToFormattedName()))})";
             }
 
             var typeName = FormatTypeName(type.FullName);

@@ -1,11 +1,28 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Mono.Cecil;
 
 namespace dotnetCampus.PublicAPI.Apis
 {
     internal static class MemberApiFormatExtensions
     {
+        public static string ToFormattedName(this MethodReturnType type)
+        {
+            // 对 (T, T) 类型的需要特殊考虑。
+            if (type.ReturnType.FullName.StartsWith("System.ValueTuple`", StringComparison.InvariantCulture)
+                && type.ReturnType is GenericInstanceType vgt)
+            {
+                var names = type.CustomAttributes.FirstOrDefault(x => x.AttributeType.FullName is "System.Runtime.CompilerServices.TupleElementNamesAttribute")
+                    ?.ConstructorArguments.SelectMany(x => (CustomAttributeArgument[])x.Value).Select(x => x.Value as string).ToArray()
+                    ?? new string[vgt.GenericArguments.Count];
+                return $"({string.Join(", ", vgt.GenericArguments.Select((x, i) => $"{x.ToFormattedName()}{(names[i] is null ? "" : $" {names[i]}")}"))})";
+            }
+
+            return type.ReturnType.ToFormattedName();
+        }
+
         public static (string modifiers, string methodName, string parameters) ToFormattedParts(this MethodDefinition method)
         {
             return (FormatModifiers(method), FormatMethodName(method), FormatParameterList(method));

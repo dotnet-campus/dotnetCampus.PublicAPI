@@ -116,7 +116,7 @@ namespace dotnetCampus.PublicAPI.Apis
                 && !x.IsRemoveOn))
             {
                 var (modifiers, methodName, parameters) = method.ToFormattedParts();
-                var api = $"{modifiers}{typeName}.{methodName}({parameters}) -> {method.ReturnType.ToFormattedName()}";
+                var api = $"{modifiers}{typeName}.{methodName}({parameters}) -> {method.MethodReturnType.ToFormattedName()}";
                 yield return api;
             }
         }
