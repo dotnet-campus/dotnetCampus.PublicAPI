@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Mono.Cecil;
 
@@ -71,7 +72,12 @@ namespace dotnetCampus.PublicAPI.Apis
         {
             if (type is TypeDefinition t && t.IsEnum)
             {
-                var fieldName = t.Fields.FirstOrDefault(x => x.Constant?.Equals(value) is true)?.Name;
+                var fieldName = t.Fields.FirstOrDefault(x =>
+                {
+                    var constanct = x.Constant is null ? (long?)null : Convert.ToInt64(x.Constant, CultureInfo.InvariantCulture);
+                    var compareValue = value is null ? (long?)null : Convert.ToInt64(value, CultureInfo.InvariantCulture);
+                    return constanct?.Equals(compareValue) is true;
+                })?.Name;
                 if (fieldName != null)
                 {
                     string typeName = type.ToFormattedName();
