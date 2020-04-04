@@ -51,32 +51,17 @@ namespace dotnetCampus.PublicAPI.Apis
 
         private static string FormatMethodName(MethodDefinition method)
         {
-            if (method.Name is "op_Implicit")
+            return method.Name switch
             {
-                return $"implicit operator {method.ReturnType.ToFormattedName()}";
-            }
-            else if (method.Name is "op_True")
-            {
-                return $"operator true";
-            }
-            else if (method.Name is "op_False")
-            {
-                return $"operator false";
-            }
-            else if (method.Name is "op_Equality")
-            {
-                return $"operator ==";
-            }
-            else if (method.Name is "op_Inequality")
-            {
-                return $"operator !=";
-            }
-            else
-            {
-                return FormatMethodName(method.Name, method.GenericParameters);
-            }
+                "op_Implicit" => $"implicit operator {method.ReturnType.ToFormattedName()}",
+                "op_True" => $"operator true",
+                "op_False" => $"operator false",
+                "op_Equality" => $"operator ==",
+                "op_Inequality" => $"operator !=",
+                _ => FormatMethodName(method.Name, method.GenericParameters),
+            };
 
-            string FormatMethodName(string fullName, IList<GenericParameter> generics)
+            static string FormatMethodName(string fullName, IList<GenericParameter> generics)
             {
                 string name;
                 if (generics.Count > 0)
@@ -106,7 +91,7 @@ namespace dotnetCampus.PublicAPI.Apis
             var parameters = $"{@this}{string.Join(", ", method.Parameters.Select(p => FormatParameter(p)))}";
             return parameters;
 
-            string FormatParameter(ParameterDefinition p)
+            static string FormatParameter(ParameterDefinition p)
             {
                 var format = "";
                 if (p.CustomAttributes.Any(x => x.AttributeType.FullName == "System.ParamArrayAttribute"))
